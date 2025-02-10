@@ -28,6 +28,10 @@ add DepartmentId int;
 alter table Employees
 add Constraint fk_dept foreign key (DepartmentId) references Department(deptId);
 
+update Employees 
+set Salary=Salary+(Salary*0.10)
+where Salary<50000
+
 alter table Department 
 add constraint pk_dept primary key(deptId);
 
@@ -56,10 +60,53 @@ insert into Customer Values(8 ,'tina','kjna@gmail.com','9034567896','pune');
 insert into Customer Values(9 ,'gopi','fsdre@gmail.com','7734567896','pune');
 select * from Customer;
 
+select * from customer where FullName like '_a%';
+select * from Customer where FullName like '%_a_%' 
 select * from Customer where addr='pune';
 select * from Customer where addr='pune' order by email, FullName;
 
-select * from Customer order by fullname;
+select * from Customer where addr='pune' order by fullname desc;
+
+select FullName from Customer order by len(FullName)desc;
+
+select * from Customer order by 1,2;
+
+select distinct addr from Customer;
+select distinct addr,FullName from Customer;
+select * from Customer where addr='pune' and FullName='gopi'
+select * from Customer where addr='pune' or FullName='gopi'
+
+create table products(
+pid int ,
+pname varchar(30),
+brandid int,
+categoryid int,
+modelyear int,
+listprice decimal(10,2)
+
+)
+insert into products Values(1,'biscuit',1,2,23,15);
+insert into products Values(2,'lays',1,2,23,45);
+insert into products Values(3,'cake',1,2,23,30);
+insert into products Values(4,'chocalate',3,3,23,25);
+insert into products Values(5,'icecream',6,9,23,99);
+
+select pname,listprice from products order by listprice,pname offset 2 rows fetch next 2 rows only;
+--offset used to skip first no of rows e. first 2 rows skip
+--fetch used to display no of next rows only
+select top 2  pname from products order by pname
+select top 2 percent pname from products order by pname;
+--top used to select top n rows from table
+select * from products where listprice in(15,45,23);
+
+select * from products where listprice between 15 and 99;
+
+
+
+
+
+
+
 
 
 create table demo(
@@ -78,6 +125,4 @@ MeetDate date ,
 MeetTime time
 )
 
-update Employees 
-set Salary=Salary+(Salary*0.10)
-where Salary<50000
+
