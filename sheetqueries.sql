@@ -74,8 +74,8 @@ select * from Customer order by 1,2;
 
 select distinct addr from Customer;
 select distinct addr,FullName from Customer;
-select * from Customer where addr='pune' and FullName='gopi'
-select * from Customer where addr='pune' or FullName='gopi'
+select * from Customer where addr='pune' and FullName='gopi';
+select * from Customer where addr='pune' or FullName='gopi';
 
 create table products(
 pid int ,
@@ -86,11 +86,28 @@ modelyear int,
 listprice decimal(10,2)
 
 )
+select * from products;
+delete TOP (5)  percent from products;
+delete from products where modelyear=23
+update products
+set prodname='icecreammm' where pid=3;
+
+update products
+set prodname='abc',
+modelyear=67
+where 
+modelyear=11;
+
+sp_rename 'products.pname','prodname','column'
+
 insert into products Values(1,'biscuit',1,2,23,15);
 insert into products Values(2,'lays',1,2,23,45);
 insert into products Values(3,'cake',1,2,23,30);
 insert into products Values(4,'chocalate',3,3,11,25);
 insert into products Values(5,'icecream',6,9,11,99);
+
+select modelyear,count(modelyear) from products group by modelyear having count(modelyear)>1;
+
 
 select pname,listprice from products order by listprice,pname offset 2 rows fetch next 2 rows only;
 --offset used to skip first no of rows e. first 2 rows skip
@@ -106,15 +123,26 @@ select Min(listprice) from products
 select Max(listprice) from products group by listprice order by listprice ;
 select modelyear,pname from products group by modelyear;
 
+select avg(listprice) from products group by listprice 
+having avg(listprice )>15
 
+select pname,modelyear,listprice from products group by pname ,cube(modelyear,pname,listprice);
 
+select pname,modelyear,listprice from products group by pname ,rollup(modelyear,pname,listprice);
 
+select * from products
+
+select pname ,modelyear from products group by grouping sets (pname,modelyear),(pname),()
 
 
 create table demo(
 salary float,
 age int
 )
+insert into demo Values(1000,12),(2000,23),(8890,90)
+select * from demo
+truncate table demo where age=12;
+delete from demo
 
 alter table demo
 alter column salary decimal(10,2);
@@ -127,4 +155,63 @@ MeetDate date ,
 MeetTime time
 )
 
+CREATE TABLE taxrate (
+	tax_id INT PRIMARY KEY ,
+	state VARCHAR (50) NOT NULL UNIQUE,
+	statetaxrate DEC (10, 2),
+	avglocaltaxrate DEC (10, 2),
+	combinedrate dec(10,2)
+	maxlocaltaxrate DEC (10, 2),
+	updatedat datetime
+);
 
+update taxe
+set updated_at =GETDATE();
+
+--merge example
+create table student_source(
+
+id int primary key,
+name varchar(20));
+create table student_target(
+
+id int primary key,
+name varchar(20));
+alter table student_target
+add constraint fk_id foreign key (id) references student_source(id);
+insert into student_source Values(1,'abc'),(2,'xyz')
+insert into student_target Values(1,'cdc'),(2,'ddd')
+
+select * from student_source s inner join student_target t on s.id=t.id; 
+
+merge student_target as t
+using student_source as s
+on t.id=s.id
+when matched then
+update set t.name=s.name
+when not matched by target then
+insert (id,name) Values(s.id,s.name)
+when not matched by source then
+delete;
+select * from student_source
+drop database if exists demo;
+
+--joins
+create table candidates(
+id int primary key identity,
+fullname varchar(100) not null
+
+)
+alter table candidates 
+add constraint fk_iid foreign key (id) references emp(id);
+create table emp(
+id int primary key identity,
+fullname varchar(100) not null
+)
+insert into candidates(fullname) Values('john doe'),('lily bush'),('peter drucker'),('jane doe');
+insert into emp (fullname) values('john doe'),('jane doe'),('michel scott'),('jack sparrow');
+
+select * from candidates;
+select * from emp;
+
+select * from emp e right join candidates c on e.id=c.id
