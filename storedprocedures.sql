@@ -302,3 +302,138 @@ select * from dbo.getallproducts(4);
 
 
 drop function dbo.getallproducts;
+
+
+
+
+
+-views
+
+create view productsdetails
+as
+select * from products;
+---to run a view
+select * from productsdetails
+
+create view productsname(pname,listprice)
+as
+select pname,listprice from products where pid=1;
+
+select * from productsname;
+--to drop view
+drop view if exists productsdetails;
+--rename view
+exec sp_rename @objname='productsname', @newname='pnames'
+
+exec sp_rename @objname='productsname', @newname='pnames'
+
+select * from pnames;
+--alter view 
+alter view pnames 
+as
+select pname,listprice from products where listprice>15;
+
+select * from pnames;
+
+
+--partitioned views means vew of multiple tables
+
+--indexed views 
+
+create view productsdata 
+
+as
+select pid from products where pid=3;
+
+create clustered index 
+productindex 
+on
+products(pid);
+
+select * from productsdata;
+
+--cursor
+-----
+declare    --declare varible
+@pname varchar(20),
+@listprice decimal;
+
+declare cursor_product cursor    --declare cursor
+for
+select pname,listprice from products;
+
+open cursor_product ;
+
+fetch next from cursor_product into
+@pname ,@listprice;
+
+while @@FETCH_STATUS=0
+begin
+print @pname+Cast(@listprice as varchar);
+fetch next from cursor_product into
+@pname,
+@listprice;
+end;
+close cursor_product;
+deallocate cursor_product;
+
+
+-------
+declare @productname varchar(20),
+@list_price decimal(10,2),
+@Modelyear varchar(20);
+
+declare printallcursor cursor
+for select 
+pname,listprice,modelyear
+from products;
+
+open printallcursor;
+
+fetch next from printallcursor into
+@productname ,@list_price,@Modelyear;
+
+while @@FETCH_STATUS=0
+begin
+print @product_name +cast(@list_price as varchar);
+
+fetch next from printallcursor into
+@productname ,@list_price,@Modelyear;
+end;
+close printallcursor;
+deallocate printallcursor;
+
+------
+declare @pname varchar(20);
+
+declare getnamecursor cursor
+for 
+select pname from products;
+
+open getnamecursor
+
+fetch next from getnamecursor into
+@pname
+
+while @@fetch_status=0
+begin
+print @pname
+
+fetch next from getnamecursor into @pname
+
+end
+close getnamecursor;
+deallocate getnamecursor;
+
+
+
+
+
+
+
+
+
+
+
+
+
