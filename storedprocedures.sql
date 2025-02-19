@@ -426,7 +426,242 @@ close getnamecursor;
 deallocate getnamecursor;
 
 
+--triggers
 
+
+--first need to create audit table
+create table product_audit
+(
+audit_id int identity(1,1) primary key,
+pid INT,
+pname VARCHAR(20),
+    brandid INT,
+    categoryid INT,
+    modelyear INT,
+    listprice DECIMAL(10, 2),
+    updated_at DATETIME,
+    operation NVARCHAR(10)
+
+)
+
+create trigger products_audit_trigger
+on products
+after insert ,delete
+as
+begin
+set nocount on;
+insert into product_audit(
+pid ,
+pname ,
+brandid ,
+categoryid,
+modelyear,
+listprice ,
+updated_at,
+operation
+)
+select
+i.pid,
+i.pname,
+brandid ,
+categoryid,
+modelyear,
+i.listprice,
+GETDATE(),
+'INS'
+from 
+inserted i
+
+union all
+
+select 
+d.pid,
+d.pname,
+brandid ,
+categoryid,
+modelyear,
+d.listprice,
+GETDATE(),
+'DEL'
+from
+deleted d;
+end
+
+
+INSERT INTO products(
+     pid,
+    pname,
+	brandid,
+	categoryid,
+	modelyear,
+	listprice
+)
+VALUES (
+9,
+    'Test product',
+    1,
+    1,
+    18,
+    599
+);
+
+insert into products Values(9,'chips',1,2,23,50);
+
+select * from product_audit;
+
+delete from products where pid=9;
+
+select * from products;
+
+create 
+
+CREATE TRIGGER products_insert_audit
+ON products
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO products_audit (pid, pname, listprice, updated_at, operation)
+    SELECT i.pid, i.pname, i.listprice, GETDATE(), 'INS'
+    FROM inserted i;  -- `i` represents the new inserted row
+END;
+
+
+CREATE TRIGGER products_delete_audit
+ON products
+AFTER DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO products_audit (pid, pname, listprice, updated_at, operation)
+    SELECT d.pid, d.pname, d.listprice, GETDATE(), 'DEL'
+    FROM deleted d;  -- `d` represents the deleted row
+END;
+
+
+create trigger products_update_trigger
+on products
+after update
+as
+begin
+insert into product_audit
+(pid,
+pname,
+brandid,
+categoryid,
+listprice,
+updated_at,
+operation)
+select 
+i.pid,
+i.pname,
+i.listprice,
+getdate(),
+'upd'
+from inserted i
+inner join deleted d 
+on i.pid=d.pid
+end
+
+update products
+set pname='cookies' , listprice=100
+where pid =5;
+select * from products;
+
+select * from product_audit;
+
+---instedof trigger
+create trigger insteadof_insert
+on products
+instead of insert
+as
+begin
+insert into product_audit
+( pid,pname,brandid,categoryid,modelyear,
+listprice,updated_at,operation
+
+)
+select
+pid,pname,brandid,categoryid,modelyear,listprice,GETDATE(),'ins' 
+from inserted i 
+
+insert into products(pid,pname,brandid,categoryid,modelyear,
+listprice) 
+select 
+pid,pname,brandid,categoryid,modelyear,
+listprice
+from inserted 
+where listprice>0;
+
+end
+
+insert into products values(9,'updated',2,3,34,50);
+select * from product_audit
+select * from products;
+
+
+
+create trigger instedof_delete
+on products
+instead of delete
+as
+begin
+insert into product_audit(
+pid,pname,brandid,categoryid,modelyear,listprice,updated_at,operation
+)
+select 
+pid,pname,brandid,categoryid,modelyear,listprice ,getdate(),'del'
+from deleted d
+
+update p
+set p.status ='inactive'
+from products p
+inner join deleted d
+on p.pid=d.pid;
+end
+
+alter table products 
+add status varchar(20) default 'active';
+update products set status='active'
+
+delete from products where pid=1;
+
+select * from product_audit
+select * from products;
+
+
+
+
+create trigger insteadof_update
+on products 
+instead of update
+as
+begin
+
+insert into product_audit(
+pid,pname,brandid,categoryid,modelyear,listprice,updated_at,operation
+)
+select 
+pid,pname,brandid,categoryid,modelyear,listprice,getdate(),'upd'
+from deleted i
+
+update p
+set p.listprice=i.listprice
+from inserted i
+inner join products p on i.pid=p.pid where i.listprice>0;
+end
+
+update products 
+set listprice=90
+where pid=4;
+
+select * from product_audit
+select * from products;
+
+
+--ddl triggers
 
 
 
