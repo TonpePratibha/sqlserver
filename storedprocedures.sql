@@ -663,12 +663,107 @@ select * from products;
 
 --ddl triggers
 
+CREATE TABLE index_logs (
+    log_id INT IDENTITY PRIMARY KEY,
+    event_data XML NOT NULL,
+    changed_by SYSNAME NOT NULL
+);
+GO
+CREATE TRIGGER ddl_index_changes
+ON database
+FOR	
+    CREATE_INDEX,
+    ALTER_INDEX, 
+    DROP_INDEX
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO index_logs (
+        event_data,
+        changed_by
+    )
+    VALUES (
+        EVENTDATA(),
+        USER
+    );
+END;
+GO
+
+CREATE NONCLUSTERED INDEX nidx_fname
+ON products(pname);
+GO
+
+select * from index_logs;
+
+DISABLE TRIGGER ddl_index_changes ON storedproceduress;
+
+ENABLE TRIGGER PreventTableDrop ON DATABASE;
+
+DROP TRIGGER PreventTableDrop ON DATABASE;
 
 
 
 
+create index ix_products 
+on products(pid);
+
+sp_helpindex products;
+drop index products.ix_products;
+
+drop index tablename.indexname
 
 
+--temp tables created in tempdb and automatically deleted is no use
+--local temp tables
+
+create table #studentdata(
+id int,
+name varchar(20)
+)
+insert into #studentdata Values(1,'abc'),(2,'xyz');
+select * from #studentdata
+--to check local temp table
+select name from tempdb.sysobjects
+where name like '#studentdata$'
+--when connection closed temp tables deleted and on also connection changes then table droped
+--global temp tables
+--across all sessions ansd connections
+--deleted if last referencing connection deleted
+--cannot be duplicate
+--
+create table ##empdetails(
+id int,
+name varchar
+)
+select * from ##empdetails
+
+--cte common table expressions
+with productscte(id,name) as(
+select pid ,pname from products)
+
+select name from productscte;
 
 
+with products_cte(id,pname,listprice) as(
+select pid ,pname,listprice from products)
 
+begin transaction
+select * from products where pid =1;
+commit;
+
+begin transaction
+update products
+set pname='xyz' where pid=1;
+commit;
+
+select * from products;
+
+alter table products
+add category varchar(20);
+
+--to check sql locks applied
+select request_session_id,request_mode,request_type,resource_type,resource_description
+from sys.dm_tran_locks
+
+sp_who---o check blocking information
