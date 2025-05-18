@@ -44,7 +44,7 @@ DateOfBirth date
 )
 
 alter table Customer 
-drop column DateOfBirth ;
+drop column DateOfBirth;
 
 alter table Customer
 add addr varchar(50);
@@ -195,6 +195,16 @@ when not matched by source then
 delete;
 select * from student_source
 drop database if exists demo;
+
+merge student_target as t
+using student_source as s
+on t.id=s.id
+when matched then 
+update set t.name=s.name
+when not matched by target then
+insert (id,name) values (s.id,s.name)
+when not matched by source then
+delete;
 
 --joins
 create table candidates(

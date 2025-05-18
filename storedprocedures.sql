@@ -41,7 +41,7 @@ end;
 
 drop procedure uspproductList;
 
-create  procedure uspFindproducts(@min_listprice as decimal)
+create procedure uspFindproducts(@min_listprice as decimal)
 as
 begin 
 select
