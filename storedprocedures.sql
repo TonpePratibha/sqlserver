@@ -300,8 +300,8 @@ select * from products where pid=@pid
 
 select * from dbo.getallproducts(4);
 
-
 drop function dbo.getallproducts;
+
 
 
 
